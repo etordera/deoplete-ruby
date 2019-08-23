@@ -1,0 +1,148 @@
+import re
+import traceback
+from deoplete.source.base import Base
+
+# ------------------------------- KEYWORD -------------------------------------------------------------------------
+ruby_core_keywords = [
+    '__callee__', '__dir__', '__enable', '__id__', '__method__', '__send__', '_id', 'abort', 'abort_on_exception',
+    'abs', 'absolute_path', 'acos', 'acosh', 'add', 'add_stress_to_class', 'add_trace_func', 'advise', 'alias_method',
+    'aliases', 'alive?', 'all?', 'all_symbols', 'allbits?', 'allocate', 'ancestors', 'angle', 'any?', 'anybits?',
+    'append', 'append_features', 'arg', 'args', 'argv', 'arity', 'ascii_compatible?', 'ascii_only?', 'asciicompat_encoding',
+    'asctime', 'asin', 'asinh', 'assoc', 'at', 'at_exit', 'atan', 'atanh', 'atime', 'attr', 'attr_accessor', 'attr_reader',
+    'attr_writer', 'autoclose', 'autoclose?', 'autoload', 'autoload?', 'b', 'backtrace', 'backtrace_locations',
+    'base_label', 'basename', 'begin', 'between?', 'bind', 'binding', 'binmode', 'binmode?', 'binread', 'binwrite',
+    'birthtime', 'bit_length', 'blksize', 'block_given?', 'blockdev?', 'blocks', 'broadcast', 'bsearch',
+    'bsearch_index', 'bytes', 'bytesize', 'byteslice', 'call', 'callcc', 'callee_id', 'caller', 'caller_locations',
+    'capitalize', 'capitalize!', 'captures', 'casecmp', 'casecmp?', 'casefold?', 'catch', 'cause', 'cbrt',
+    'ceil', 'center', 'chain', 'change_privilege', 'chardev?', 'chars', 'chdir', 'children', 'chmod', 'chomp',
+    'chomp!', 'chop', 'chop!', 'chown', 'chr', 'chroot', 'chunk', 'chunk_while', 'clamp', 'class', 'class_eval',
+    'class_exec', 'class_variable_defined?', 'class_variable_get', 'class_variable_set', 'class_variables',
+    'clear', 'clock_getres', 'clock_gettime', 'clone', 'close', 'close_on_exec', 'close_on_exec?', 'close_read',
+    'close_write', 'closed?', 'codepoints', 'coerce', 'collect', 'collect!', 'collect_concat', 'combination',
+    'compact', 'compact!', 'compare_by_identity', 'compare_by_identity?', 'compatible?', 'compile',
+    'compile_file', 'compile_option', 'concat', 'conj', 'conjugate', 'const_defined?', 'const_get', 'const_missing',
+    'const_set', 'constants', 'convert', 'convpath', 'copy_stream', 'coredump?', 'cos', 'cosh', 'count', 'count_objects',
+    'cover?', 'crypt', 'ctime', 'current', 'curry', 'cycle', 'daemon', 'day', 'default', 'default_external', 'default_internal',
+    'default_proc', 'define_finalizer', 'define_method', 'define_singleton_method', 'defined_class',
+    'delete', 'delete!', 'delete_at', 'delete_if', 'delete_prefix', 'delete_prefix!', 'delete_suffix',
+    'delete_suffix!', 'denominator', 'deprecate_constant', 'deq', 'destination_encoding', 'destination_encoding_name',
+    'detach', 'detect', 'dev', 'dev_major', 'dev_minor', 'difference', 'dig', 'digits', 'directory?', 'dirname',
+    'disable', 'disasm', 'disassemble', 'display', 'div', 'divmod', 'downcase', 'downcase!', 'downto', 'drop',
+    'drop_while', 'dst?', 'dummy?', 'dump', 'dup', 'each', 'each_byte', 'each_char', 'each_child', 'each_codepoint',
+    'each_cons', 'each_entry', 'each_grapheme_cluster', 'each_index', 'each_key', 'each_line', 'each_object',
+    'each_pair', 'each_slice', 'each_value', 'each_with_index', 'each_with_object', 'egid', 'eid', 'empty?',
+    'enable', 'enabled?', 'enclose', 'enclosed?', 'encode', 'encode!', 'encoding', 'end', 'end_with?', 'enq',
+    'entries', 'enum_for', 'eof', 'eof?', 'eql?', 'equal?', 'erf', 'erfc', 'errno', 'error_bytes', 'error_char',
+    'escape', 'euid', 'eval', 'eval_script', 'even?', 'event', 'exception', 'exclude_end?', 'exclusive', 'exec',
+    'executable?', 'executable_real?', 'exist?', 'exists?', 'exit', 'exit!', 'exit_value', 'exited?', 'exitstatus',
+    'exp', 'expand_path', 'extend', 'extend_object', 'extended', 'external_encoding', 'extname', 'fail',
+    'fcntl', 'fdatasync', 'fdiv', 'feed', 'fetch', 'fetch_values', 'file', 'file?', 'filename', 'fileno', 'fill',
+    'filter', 'filter!', 'find', 'find_all', 'find_index', 'finish', 'finite?', 'first', 'first_column', 'first_lineno',
+    'fixed_encoding?', 'flat_map', 'flatten', 'flatten!', 'flock', 'floor', 'flush', 'fnmatch', 'fnmatch?',
+    'for_fd', 'force', 'force_encoding', 'foreach', 'fork', 'format', 'freeze', 'frexp', 'friday?', 'from_name',
+    'frozen?', 'fsync', 'ftype', 'full_message', 'gamma', 'garbage_collect', 'gcd', 'gcdlcm', 'getbyte', 'getc',
+    'getegid', 'geteuid', 'getgid', 'getgm', 'getlocal', 'getpgid', 'getpgrp', 'getpriority', 'getrlimit',
+    'gets', 'getsid', 'getuid', 'getutc', 'getwd', 'gid', 'glob', 'global_variables', 'gm', 'gmt?', 'gmt_offset',
+    'gmtime', 'gmtoff', 'grant_privilege', 'grapheme_clusters', 'grep', 'grep_v', 'group', 'group_by', 'groups',
+    'grpowned?', 'gsub', 'gsub!', 'handle_interrupt', 'has_key?', 'has_value?', 'hash', 'hex', 'home', 'hour',
+    'hypot', 'i', 'id', 'identical?', 'imag', 'imaginary', 'include', 'include?', 'included', 'included_modules',
+    'incomplete_input?', 'index', 'infinite?', 'inherited', 'initgroups', 'initialize_copy', 'inject',
+    'ino', 'inplace_mode', 'insert', 'insert_output', 'inspect', 'instance_eval', 'instance_exec', 'instance_method',
+    'instance_methods', 'instance_of?', 'instance_variable_defined?', 'instance_variable_get',
+    'instance_variable_set', 'instance_variables', 'instruction_sequence', 'integer?', 'intern',
+    'internal_encoding', 'invert', 'ioctl', 'is_a?', 'isatty', 'isdst', 'issetugid', 'iterator?', 'itself',
+    'join', 'keep_if', 'key', 'key?', 'keys', 'kill', 'kind_of?', 'label', 'lambda', 'lambda?', 'last', 'last_column',
+    'last_error', 'last_lineno', 'last_match', 'last_status', 'latest_gc_info', 'lazy', 'lchmod', 'lchown',
+    'lcm', 'ldexp', 'length', 'lgamma', 'lineno', 'lines', 'link', 'list', 'ljust', 'load', 'load_from_binary', 'load_from_binary_extra_data',
+    'local', 'local_variable_defined?', 'local_variable_get', 'local_variable_set', 'local_variables',
+    'locale_charmap', 'localtime', 'lock', 'locked?', 'log', 'loop', 'lstat', 'lstrip', 'lstrip!', 'lutime', 'magnitude',
+    'main', 'malloc_allocated_size', 'malloc_allocations', 'map', 'map!', 'match', 'match?', 'max', 'max_by',
+    'maxgroups', 'mday', 'member?', 'members', 'merge', 'merge!', 'message', 'method', 'method_added', 'method_defined?',
+    'method_id', 'method_missing', 'method_removed', 'method_undefined', 'methods', 'min', 'min_by',
+    'minmax', 'minmax_by', 'mkdir', 'mkfifo', 'mktime', 'mode', 'module_eval', 'module_exec', 'module_function',
+    'modulo', 'mon', 'monday?', 'month', 'mtime', 'name', 'name_list', 'named_captures', 'names', 'nan?', 'negative?',
+    'nesting', 'new', 'new_seed', 'next', 'next!', 'next_float', 'next_values', 'nil?', 'nlink', 'nobits?', 'none?',
+    'nonzero?', 'now', 'nsec', 'num_waiting', 'numerator', 'object_id', 'oct', 'odd?', 'of', 'offset', 'one?', 'open',
+    'options', 'ord', 'original_name', 'owned?', 'owner', 'p', 'pack', 'parameters', 'parse', 'parse_file', 'partition',
+    'pass', 'path', 'pause', 'peek', 'peek_values', 'pending_interrupt?', 'permutation', 'phase', 'pid', 'pipe',
+    'pipe?', 'polar', 'pop', 'popen', 'pos', 'positive?', 'post_match', 'pow', 'pp', 'ppid', 'pre_match', 'pread', 'pred',
+    'prepend', 'prepend_features', 'prepended', 'prev_float', 'primitive_convert', 'primitive_errinfo',
+    'print', 'printf', 'priority', 'private', 'private_call?', 'private_class_method', 'private_constant',
+    'private_instance_methods', 'private_method_defined?', 'private_methods', 'proc', 'product',
+    'protected', 'protected_instance_methods', 'protected_method_defined?', 'protected_methods',
+    'public', 'public_class_method', 'public_constant', 'public_instance_method', 'public_instance_methods',
+    'public_method', 'public_method_defined?', 'public_methods', 'public_send', 'push', 'putback',
+    'putc', 'puts', 'pwd', 'pwrite', 'quo', 'quote', 'raise', 'raised_exception', 'rand', 'random_number', 'rassoc',
+    'rationalize', 'raw_data', 'rdev', 'rdev_major', 'rdev_minor', 're_exchange', 're_exchangeable?',
+    'read', 'read_nonblock', 'readable?', 'readable_real?', 'readagain_bytes', 'readbyte', 'readchar',
+    'readline', 'readlines', 'readlink', 'readpartial', 'real', 'real?', 'realdirpath', 'realpath', 'reason',
+    'receiver', 'rect', 'rectangular', 'reduce', 'refine', 'regexp', 'rehash', 'reject', 'reject!', 'remainder',
+    'remove_class_variable', 'remove_const', 'remove_instance_variable', 'remove_method', 'remove_stress_to_class',
+    'rename', 'reopen', 'repeated_combination', 'repeated_permutation', 'replace', 'replacement',
+    'replicate', 'report', 'report_on_exception', 'require', 'require_relative', 'respond_to?', 'respond_to_missing?',
+    'restore', 'result', 'resume', 'return_value', 'reverse', 'reverse!', 'reverse_each', 'rewind', 'rid',
+    'rindex', 'rjust', 'rmdir', 'rotate', 'rotate!', 'round', 'rpartition', 'rstrip', 'rstrip!', 'run', 'safe_level',
+    'sample', 'saturday?', 'scan', 'scrub', 'scrub!', 'search_convpath', 'sec', 'seed', 'seek', 'select', 'select!',
+    'self', 'send', 'set_backtrace', 'set_encoding', 'set_trace_func', 'setbyte', 'setegid', 'seteuid',
+    'setgid', 'setgid?', 'setpgid', 'setpgrp', 'setpriority', 'setproctitle', 'setregid', 'setresgid', 'setresuid',
+    'setreuid', 'setrgid', 'setrlimit', 'setruid', 'setsid', 'setuid', 'setuid?', 'shift', 'shuffle', 'shuffle!',
+    'sid_available?', 'signal', 'signaled?', 'signame', 'signo', 'sin', 'singleton_class', 'singleton_class?',
+    'singleton_method', 'singleton_method_added', 'singleton_method_removed', 'singleton_method_undefined',
+    'singleton_methods', 'sinh', 'size', 'size?', 'skip', 'sleep', 'slice', 'slice!', 'slice_after', 'slice_before',
+    'slice_when', 'socket?', 'sort', 'sort!', 'sort_by', 'sort_by!', 'source', 'source_encoding', 'source_encoding_name',
+    'source_location', 'spawn', 'split', 'sprintf', 'sqrt', 'squeeze', 'squeeze!', 'srand', 'start', 'start_with?',
+    'stat', 'status', 'step', 'sticky?', 'stop', 'stop?', 'stopped?', 'stopsig', 'store', 'stress', 'strftime', 'string',
+    'strip', 'strip!', 'sub', 'sub!', 'subsec', 'succ', 'succ!', 'success?', 'sum', 'sunday?', 'super_method', 'superclass',
+    'swapcase', 'swapcase!', 'switch', 'symlink', 'symlink?', 'sync', 'synchronize', 'syscall', 'sysopen',
+    'sysread', 'sysseek', 'system', 'syswrite', 'tag', 'taint', 'tainted?', 'take', 'take_while', 'tan', 'tanh',
+    'tap', 'tell', 'terminate', 'termsig', 'test', 'then', 'thread_variable?', 'thread_variable_get', 'thread_variable_set',
+    'thread_variables', 'throw', 'thursday?', 'times', 'to_a', 'to_ary', 'to_binary', 'to_c', 'to_enum', 'to_f',
+    'to_h', 'to_hash', 'to_i', 'to_int', 'to_io', 'to_path', 'to_proc', 'to_r', 'to_s', 'to_str', 'to_sym', 'to_tty?',
+    'to_write_io', 'total_time', 'tr', 'tr!', 'tr_s', 'tr_s!', 'trace', 'trace_points', 'trace_var', 'transfer',
+    'transform_keys', 'transform_keys!', 'transform_values', 'transform_values!', 'transpose',
+    'trap', 'truncate', 'trust', 'try_convert', 'try_lock', 'tty?', 'tuesday?', 'tv_nsec', 'tv_sec', 'tv_usec',
+    'type', 'uid', 'umask', 'unbind', 'undef_method', 'undefine_finalizer', 'undump', 'ungetbyte', 'ungetc',
+    'unicode_normalize', 'unicode_normalize!', 'unicode_normalized?', 'union', 'uniq', 'uniq!', 'unlink',
+    'unlock', 'unpack', 'unshift', 'untaint', 'untrace_var', 'untrust', 'untrusted?', 'upcase', 'upcase!',
+    'update', 'upto', 'urandom', 'usec', 'used_modules', 'using', 'utc', 'utc?', 'utc_offset', 'utime', 'valid_encoding?',
+    'value', 'value?', 'values', 'values_at', 'verify_internal_consistency', 'verify_transient_heap_internal_consistency',
+    'wait', 'waitall', 'waitpid', 'wakeup', 'warn', 'wday', 'wednesday?', 'with_index', 'with_object', 'world_readable?',
+    'world_writable?', 'writable?', 'writable_real?', 'write', 'write_nonblock', 'yday', 'year', 'yield',
+    'yield_self', 'zero?', 'zip', 'zone', 'ARGF', 'AbstractSyntaxTree', 'ArgumentError', 'ArithmeticSequence',
+    'Array', 'Backtrace', 'BasicObject', 'Binding', 'Chain', 'Class', 'ClosedQueueError', 'Comparable',
+    'CompatibilityError', 'Complex', 'ConditionVariable', 'Constants', 'Continuation', 'Converter',
+    'ConverterNotFoundError', 'DEBUG', 'Data', 'Dir', 'DomainError', 'EAGAINWaitReadable', 'EAGAINWaitWritable',
+    'EINPROGRESSWaitReadable', 'EINPROGRESSWaitWritable', 'ENV', 'EOFError', 'EWOULDBLOCKWaitReadable',
+    'EWOULDBLOCKWaitWritable', 'Encoding', 'EncodingError', 'Enumerable', 'Enumerator', 'Errno', 'Exception',
+    'FalseClass', 'Fiber', 'FiberError', 'File', 'FileTest', 'Float', 'FloatDomainError', 'Formatter', 'FrozenError',
+    'GC', 'GID', 'Generator', 'Hash', 'IO', 'IOError', 'IndexError', 'InstructionSequence', 'Integer', 'Interrupt',
+    'InvalidByteSequenceError', 'Kernel', 'KeyError', 'Lazy', 'LoadError', 'LocalJumpError', 'Location',
+    'MJIT', 'Marshal', 'MatchData', 'Math', 'Method', 'Module', 'Mutex', 'NameError', 'NilClass', 'NoMemoryError',
+    'NoMethodError', 'Node', 'NotImplementedError', 'Numeric', 'Object', 'ObjectSpace', 'Proc', 'Process',
+    'Profiler', 'Queue', 'Random', 'Range', 'RangeError', 'Rational', 'Regexp', 'RegexpError', 'RubyVM', 'RuntimeError',
+    'ScriptError', 'SecurityError', 'Signal', 'SignalException', 'SizedQueue', 'StandardError', 'Stat',
+    'Status', 'StopIteration', 'String', 'Struct', 'Symbol', 'SyntaxError', 'Sys', 'SystemCallError', 'SystemExit',
+    'SystemStackError', 'Thread', 'ThreadError', 'ThreadGroup', 'Time', 'TracePoint', 'TrueClass', 'TypeError',
+    'UID', 'UnboundMethod', 'UncaughtThrowError', 'UndefinedConversionError', 'UnicodeNormalize',
+    'WaitReadable', 'WaitWritable', 'Warning', 'WeakMap', 'Yielder', 'ZeroDivisionError'
+]
+# ------------------------------- KEYWORD -------------------------------------------------------------------------
+
+class Source(Base):
+    def __init__(self, vim):
+        super().__init__(vim)
+        self.name = 'deoplete-ruby-core'
+        self.filetypes = ['ruby']
+        self.mark = '[ruby-core]'
+        self.rank = 10
+
+    def get_complete_position(self, context):
+        m = re.search('[a-zA-Z0-9_?!]*$', context['input'])
+        return m.start() if m else -1
+
+    def gather_candidates(self, context):
+        try:
+            dic = ruby_core_keywords
+            return dic
+        except Exception:
+            traceback.print_exc()
