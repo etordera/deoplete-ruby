@@ -16,7 +16,6 @@ def parse_html(url):
     return BeautifulSoup(html, 'html.parser')
 
 def extract_keywords(url, methods, classes):
-    # Get html doc
     soup = parse_html(url)
 
     method_links = soup.find('div', { 'id': 'method-index' }).findAll('a')
@@ -37,7 +36,6 @@ def extract_keywords(url, methods, classes):
 
 def get_stdlib_urls(toc_url):
     soup = parse_html(toc_url)
-    urls = []
     return list(map(lambda a: stdlib_url + a['href'], soup.findAll('a', { 'class': 'mature' })))
 
 def output_keywords(name, keywords):
